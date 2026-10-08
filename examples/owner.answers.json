@@ -3,33 +3,21 @@
   "config": {
     "version": 1,
     "groupId": "synthetic-owner-group",
-    "allowedGroupIds": [
-      "synthetic-owner-group"
-    ],
+    "allowedGroupIds": ["synthetic-owner-group"],
     "objective": "Buscar opciones ficticias para una prueba local",
-    "preferences": [
-      "Preferencia ficticia de ejemplo"
-    ],
+    "preferences": ["Preferencia ficticia de ejemplo"],
     "budget": {
       "amount": 900,
       "currency": "USD"
     },
     "intervalMinutes": 360,
-    "sourceHosts": [
-      "example.org"
-    ],
+    "sourceHosts": ["example.org"],
     "maxItems": 3
   },
   "runtime": {
     "provider": "demo",
     "host": "manual-local",
-    "requestedFeatures": [
-      "local-outbox",
-      "whatsapp",
-      "scheduler"
-    ]
+    "requestedFeatures": ["local-outbox", "whatsapp", "scheduler"]
   },
-  "redactionTerms": [
-    "Etiqueta Privada Ficticia"
-  ]
+  "redactionTerms": ["Etiqueta Privada Ficticia"]
 }

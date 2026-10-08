@@ -1,17 +1,13 @@
-# Contribuir a Lookout
+# Contribuir
 
-Empieza con un cambio pequeño: mejora una prueba, la guía de instalación o un adaptador aislado.
+Lee docs/CONTRIBUTOR.md y AGENTS.md. Trabaja una pieza pequeña en una rama con fixtures sintéticos.
 
 ```sh
 npm ci --ignore-scripts
 npm run check
-npm run demo
+npm run demo:onboarding
 ```
 
-No uses chats, grupos, credenciales ni sesiones reales en fixtures, issues, CI o pull requests. No ejecutes WhatsApp ni tareas periódicas como parte de pruebas.
+Datos privados van fuera de Git. Prepara un bundle por allowlist, escanéalo y revisa archivos completos, líneas borradas y borrador. Publicar necesita aprobación humana por cuenta/source/target/contenido exactos. Cada futuro draft pregunta otra vez; el dueño decide merges.
 
-Los cambios de transporte deben mostrar cómo restringen lectura/destino, permiten preview y aprobación, reconocen entrega y se detienen ante resultado incierto. Mantén los riesgos y funciones pendientes documentados.
-
-No publiques una vulnerabilidad con datos privados en un issue público. Para reportar un fallo, usa una reproducción sintética y describe el impacto sin credenciales.
-
-La base se publica bajo MIT. Al contribuir, aceptas publicar tu contribución bajo esa licencia.
+No publiques datos privados para reportar bugs. No ejecutes código externo con acceso al home/sesiones. Contribuciones bajo MIT.

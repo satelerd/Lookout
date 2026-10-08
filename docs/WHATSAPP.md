@@ -30,3 +30,7 @@ Si se propone un transporte oficial, verifica su documentación vigente y el sop
 ## Estado privado
 
 Sesiones locales con permisos mínimos; jamás en Git, logs públicos, CI o backups compartidos. El transporte necesitará una política de borrado y revocación del dispositivo vinculado. Terminar Lookout no revoca una sesión WhatsApp; el dueño debe hacerlo desde Dispositivos vinculados. En 0.1 no se crea ninguna sesión.
+
+## Onboarding y contribución 0.2
+
+El checkpoint registra whatsapp como gap; no instala Baileys ni QR para completar el recorrido. Un dueño interesado puede pasar a docs/CONTRIBUTOR.md. Futuras sesiones viven fuera del checkout y nunca entran en bundles. Aprobación local no autoriza cuenta, contexto real, envío o scheduler.

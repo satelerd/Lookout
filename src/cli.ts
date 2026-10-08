@@ -10,12 +10,21 @@ import {
 } from "./storage.js";
 import { DemoProvider, CodexProvider } from "./providers.js";
 import { planCycle, commitCycle } from "./engine.js";
-import { defaultHome, privateHome, assertOutsideCheckout, canonicalPath, checkoutRoot } from "./private.js";
+import {
+  defaultHome,
+  privateHome,
+  assertOutsideCheckout,
+  canonicalPath,
+  checkoutRoot,
+} from "./private.js";
 import { workflow } from "./workflows-cli.js";
 
-
 async function main(): Promise<void> {
-  if (["doctor", "onboard", "contribute", "maintainer", "update"].includes(process.argv[2] ?? "")) {
+  if (
+    ["doctor", "onboard", "contribute", "maintainer", "update"].includes(
+      process.argv[2] ?? "",
+    )
+  ) {
     await workflow(process.argv.slice(2));
     return;
   }
@@ -51,18 +60,48 @@ async function main(): Promise<void> {
   if (!["demo", "codex"].includes(values.provider))
     throw new Error("Unknown provider");
   const root = await checkoutRoot();
-  const home = await privateHome(values.home, root, !values.state && (values.commit || ["approve", "pause", "terminate"].includes(command)));
-  const guardInput = async (path: string, messages = false): Promise<string> => {
+  const home = await privateHome(
+    values.home,
+    root,
+    !values.state &&
+      (values.commit || ["approve", "pause", "terminate"].includes(command)),
+  );
+  const guardInput = async (
+    path: string,
+    messages = false,
+  ): Promise<string> => {
     const full = await canonicalPath(resolve(path));
     const samples = ["apartments", "travel", "concerts"];
-    const permitted = await Promise.all(samples.map(name => canonicalPath(join(root, "examples", name + (messages ? ".messages.json" : ".json")))));
+    const permitted = await Promise.all(
+      samples.map((name) =>
+        canonicalPath(
+          join(
+            root,
+            "examples",
+            name + (messages ? ".messages.json" : ".json"),
+          ),
+        ),
+      ),
+    );
     if (!permitted.includes(full)) await assertOutsideCheckout(full, root);
     return full;
   };
-  const config = parseConfig(await readJson(await guardInput(values.config ?? join(home, "config.json"))));
-  const dir = await assertOutsideCheckout(values.state ?? join(home, "runtime"), root);
-  if (values.provider === "codex" && values.confirm !== "research-with-codex:" + configDigest(config))
-    throw new Error("Owner consent to send context and use quota is required: --confirm research-with-codex:CONFIG_DIGEST. A local demo approval is insufficient.");
+  const config = parseConfig(
+    await readJson(
+      await guardInput(values.config ?? join(home, "config.json")),
+    ),
+  );
+  const dir = await assertOutsideCheckout(
+    values.state ?? join(home, "runtime"),
+    root,
+  );
+  if (
+    values.provider === "codex" &&
+    values.confirm !== "research-with-codex:" + configDigest(config)
+  )
+    throw new Error(
+      "Owner consent to send context and use quota is required: --confirm research-with-codex:CONFIG_DIGEST. A local demo approval is insufficient.",
+    );
   const execute = async (): Promise<void> => {
     const state = await readState(dir, config);
     const digest = configDigest(config);

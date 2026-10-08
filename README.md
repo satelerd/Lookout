@@ -51,18 +51,18 @@ El home por defecto es el directorio de datos local de Lookout: Application Supp
 
 ## Qué funciona hoy
 
-| Pieza | Estado |
-| --- | --- |
-| Onboarding + doctor | Ejecutable, reanudable; entrevista guiada por el agente |
-| Preferencias y presupuesto | Configuración local del dueño, con validación fuera del modelo |
-| Investigación | Demo o CLI oficial de Codex, opt-in y con consentimiento de contexto/cuota |
-| Resúmenes | Máximo 3 opciones con fuentes permitidas; silencio si no hay novedades |
-| Memoria | URLs normalizadas + precio/moneda, IDs nuevos y checkpoints locales |
-| Entrega | Archivo local con reserva/recibo; pausa y terminación |
-| Contribución | Buscar gaps, bundle por allowlist, redacción de prosa, escaneo de código/diff, permiso de un draft |
-| Mantenedor | Propuesta desactivada y triage/respuestas locales, sin ejecutar PRs ni publicarlas |
-| Actualizaciones | Plan de commit exacto, adopción de código revisado y rollback preservando datos |
-| WhatsApp / QR / scheduler | **Pendientes**; ningún comando los activa |
+| Pieza                      | Estado                                                                                             |
+| -------------------------- | -------------------------------------------------------------------------------------------------- |
+| Onboarding + doctor        | Ejecutable, reanudable; entrevista guiada por el agente                                            |
+| Preferencias y presupuesto | Configuración local del dueño, con validación fuera del modelo                                     |
+| Investigación              | Demo o CLI oficial de Codex, opt-in y con consentimiento de contexto/cuota                         |
+| Resúmenes                  | Máximo 3 opciones con fuentes permitidas; silencio si no hay novedades                             |
+| Memoria                    | URLs normalizadas + precio/moneda, IDs nuevos y checkpoints locales                                |
+| Entrega                    | Archivo local con reserva/recibo; pausa y terminación                                              |
+| Contribución               | Buscar gaps, bundle por allowlist, redacción de prosa, escaneo de código/diff, permiso de un draft |
+| Mantenedor                 | Propuesta desactivada y triage/respuestas locales, sin ejecutar PRs ni publicarlas                 |
+| Actualizaciones            | Plan de commit exacto, adopción de código revisado y rollback preservando datos                    |
+| WhatsApp / QR / scheduler  | **Pendientes**; ningún comando los activa                                                          |
 
 El motor hace una sola ejecución. En commit respeta el intervalo; la investigación puede encontrar cambios web aunque no haya mensajes nuevos. La memoria conserva hasta 1.000 hallazgos y 10.000 IDs; no detecta todos los duplicados semánticos.
 

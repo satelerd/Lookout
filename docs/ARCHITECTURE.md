@@ -57,3 +57,13 @@ apartments, travel y concerts usan IDs inventados y example.org. DemoProvider co
 1. Revisar una investigación Codex real con contexto sintético y fuentes oficiales.
 2. Implementar un transporte de prueba con captura/recibo, consentimientos y emparejamiento revisables.
 3. Sólo entonces evaluar un scheduler de opt-in con duración, controles y métricas de cuota.
+
+## Capa 0.2
+
+private.ts valida home canónico fuera de Git/permisos; onboarding.ts guarda acuerdos/checkpoints/gaps; doctor.ts comprueba herramientas sin login. contribution.ts proyecta archivos elegidos a un bundle, privacy.ts escanea/redacta, maintainer.ts produce triage local desactivado y updates.ts cambia sólo código revisado.
+
+La CLI usa locks por home. El publisher reescanea, verifica cuenta/base/target/fork público y reconstruye sólo el manifest sobre la base pública. No exporta historial local. Reserva antes de mutaciones remotas y bloquea replay incierto; conciliación aún manual. Cada permiso vincula bundle/source/target/cuenta y expira en diez minutos.
+
+Patrones no detectan toda PII/secretos: términos privados y revisión humana son necesarios. Un home protegido no aísla de un proceso hostil con control de la cuenta local. El flag registra una respuesta humana obtenida por el agente, no prueba criptográficamente su identidad.
+
+El recorrido usa directorios temporales, GitHub mock e inyección como datos. Adopción/rollback se prueban con Git temporal. No se requieren chats, QR, tokens, cron ni cuenta real.
