@@ -16,6 +16,7 @@ import {
   assertOutsideCheckout,
   canonicalPath,
   checkoutRoot,
+  privatePath,
 } from "./private.js";
 import { workflow } from "./workflows-cli.js";
 import { regularFile } from "./private.js";
@@ -88,23 +89,26 @@ async function main(): Promise<void> {
     if (!permitted.includes(full)) await assertOutsideCheckout(full, root);
     return full;
   };
-  const config = parseConfig(
-    await readJson(
-      await guardInput(values.config ?? join(home, "config.json")),
-    ),
-  );
   const dir = await assertOutsideCheckout(
-    values.state ?? join(home, "runtime"),
+    values.state
+      ? await privatePath(values.state)
+      : await privatePath(home, "runtime"),
     root,
   );
-  if (
-    values.provider === "codex" &&
-    values.confirm !== "research-with-codex:" + configDigest(config)
-  )
-    throw new Error(
-      "Owner consent to send context and use quota is required: --confirm research-with-codex:CONFIG_DIGEST. A local demo approval is insufficient.",
-    );
   const execute = async (): Promise<void> => {
+    const config = parseConfig(
+      await readJson(
+        await guardInput(values.config ?? join(home, "config.json")),
+      ),
+    );
+    await privatePath(dir, "outbox");
+    if (
+      values.provider === "codex" &&
+      values.confirm !== "research-with-codex:" + configDigest(config)
+    )
+      throw new Error(
+        "Owner consent to send context and use quota is required: --confirm research-with-codex:CONFIG_DIGEST. A local demo approval is insufficient.",
+      );
     const state = await readState(dir, config);
     const digest = configDigest(config);
     if (command === "status") {

@@ -6,6 +6,7 @@ import {
   defaultHome,
   checkoutRoot,
   assertOutsideCheckout,
+  privatePath,
 } from "./private.js";
 import {
   initOnboarding,
@@ -172,6 +173,8 @@ export async function workflow(argv: string[]): Promise<void> {
   };
   const readonly =
     command === "doctor" || action === "status" || action === "proposal";
-  const result = readonly ? await execute() : await withLock(home, execute);
+  const result = readonly
+    ? await execute()
+    : await withLock(await privatePath(home, "runtime"), execute);
   console.log(JSON.stringify(result, null, 2));
 }

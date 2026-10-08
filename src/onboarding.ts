@@ -1,4 +1,3 @@
-import { join } from "node:path";
 import {
   hash,
   parseConfig,
@@ -6,7 +5,7 @@ import {
   emptyState,
   type Config,
 } from "./model.js";
-import { readPrivate, writePrivate } from "./private.js";
+import { readPrivate, writePrivate, privatePath } from "./private.js";
 import { readState, saveState } from "./storage.js";
 import { planCycle } from "./engine.js";
 import { DemoProvider } from "./providers.js";
@@ -119,7 +118,8 @@ export async function configure(
     );
   const state = await onboarding(home);
   if (state.digest === digest) return state;
-  const runtime = await readState(join(home, "runtime"), p.config);
+  const runtimeDir = await privatePath(home, "runtime");
+  const runtime = await readState(runtimeDir, p.config);
   if (runtime.status === "terminated")
     throw new Error(
       "Terminated search cannot be reactivated. Choose a new private home deliberately.",
@@ -128,7 +128,7 @@ export async function configure(
     throw new Error("Reconcile pending delivery before changing owner answers");
   await writePrivate(home, "profile.json", p);
   await writePrivate(home, "config.json", p.config);
-  await saveState(join(home, "runtime"), {
+  await saveState(runtimeDir, {
     ...runtime,
     status: "paused",
     approvedDigest: null,
@@ -190,10 +190,11 @@ export async function approveOnboarding(
     throw new Error(
       "Insufficient confirmation: use the exact approve-local preview digest after owner review",
     );
-  const runtime = await readState(join(home, "runtime"), p.config);
+  const runtimeDir = await privatePath(home, "runtime");
+  const runtime = await readState(runtimeDir, p.config);
   if (runtime.status === "terminated" || runtime.pending)
     throw new Error("Runtime is terminated or delivery is unresolved");
-  await saveState(join(home, "runtime"), {
+  await saveState(runtimeDir, {
     ...runtime,
     status: "active",
     approvedDigest: configDigest(p.config),

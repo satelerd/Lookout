@@ -205,6 +205,7 @@ export async function prepareBundle(
     root = await canonicalPath(repoRoot),
     entries: Bundle["entries"] = [];
   for (const path of paths) {
+    assertPublic(path, terms);
     const file = join(root, path);
     if (!contains(root, await canonicalPath(file)))
       throw new Error("Export path escapes checkout through a symlink");
@@ -300,8 +301,10 @@ export async function readBundle(home: string, id: string): Promise<Bundle> {
   repository(b.repository);
   repository(b.sourceRepository);
   const terms = privateTerms(await profile(home));
-  for (const e of b.entries)
+  for (const e of b.entries) {
+    assertPublic(e.path, terms);
     if (e.content !== null) assertPublic(e.content, terms);
+  }
   assertPublic(b.patch, terms);
   assertPublic(b.draft, terms);
   return b;
@@ -408,7 +411,9 @@ export async function publishBundle(
     );
   const api = async (path: string, body?: unknown): Promise<any> => {
     if (body === undefined)
-      return JSON.parse(await execute("gh", ["api", path]));
+      return JSON.parse(
+        await execute("gh", ["api", path, "--hostname", "github.com"]),
+      );
     const input = join(home, "request-" + randomUUID() + ".json");
     try {
       await writeFile(input, JSON.stringify(body), { mode: 0o600, flag: "wx" });
@@ -416,6 +421,8 @@ export async function publishBundle(
         await execute("gh", [
           "api",
           path,
+          "--hostname",
+          "github.com",
           "--method",
           "POST",
           "--input",

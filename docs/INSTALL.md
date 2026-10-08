@@ -40,7 +40,7 @@ El home debe ser 0700 en POSIX; archivos nuevos 0600. En Windows revisa ACL: bit
 
 El perfil tiene config, runtime y redactionTerms. Registra nombres/etiquetas privadas, direcciones e identificadores que patrones genéricos no detecten. Grupo, objetivo y preferencias se agregan a los términos automáticamente.
 
-Config/estado/checkpoints/chats/logs/sesiones/bundles van afuera. La CLI rechaza el checkout, otro Git y aliases por symlink. Sólo los tres fixtures de búsqueda conocidos de examples son excepciones de lectura para demo.
+Config/estado/checkpoints/chats/logs/sesiones/bundles van afuera. La CLI rechaza el checkout, otro Git y symlinks en home, runtime, outbox y archivos privados. Comprueba rutas antes de usarlas; no aísla de procesos hostiles de la misma cuenta que las cambien concurrentemente. Sólo los tres fixtures de búsqueda conocidos de examples son excepciones de lectura para demo.
 
 Repetir la misma configuración conserva progreso; cambiarla invalida revisión/activación local. Otro grupo necesita otro home. Checkpoint/status no incluyen respuestas. No eludas pending ni terminación.
 

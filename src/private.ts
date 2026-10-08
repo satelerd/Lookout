@@ -126,7 +126,40 @@ export async function privateHome(
     await mkdir(home, { recursive: true, mode: 0o700 });
     await check();
   }
+  await privatePath(home, "runtime/outbox");
+  await privatePath(home, "runtime/state.json", "file");
   return home;
+}
+/** Check existing components at use time; not a sandbox against local races. */
+export async function privatePath(
+  home: string,
+  name = "",
+  kind: "directory" | "file" = "directory",
+): Promise<string> {
+  const root = resolve(home),
+    path = resolve(root, name);
+  if (!contains(root, path)) throw new Error("Private path escapes its home");
+  const parts: string[] = [];
+  let current = path;
+  while (current !== root) {
+    parts.unshift(current);
+    current = dirname(current);
+  }
+  parts.unshift(root);
+  for (const part of parts) {
+    try {
+      const stat = await lstat(part);
+      if (stat.isSymbolicLink())
+        throw new Error("Private paths must not contain symlinks");
+      const directory = part !== path || kind === "directory";
+      if (directory ? !stat.isDirectory() : !stat.isFile())
+        throw new Error("Private path has an unexpected file type");
+    } catch (e) {
+      if ((e as NodeJS.ErrnoException).code !== "ENOENT") throw e;
+    }
+  }
+  await assertOutsideCheckout(path);
+  return path;
 }
 export async function regularFile(path: string): Promise<void> {
   const stat = await lstat(path);
@@ -137,7 +170,7 @@ export async function readPrivate(
   home: string,
   name: string,
 ): Promise<unknown | null> {
-  const path = join(home, name);
+  const path = await privatePath(home, name, "file");
   try {
     await regularFile(path);
     return await readJson(path);
@@ -152,7 +185,7 @@ export async function writePrivate(
   value: unknown,
 ): Promise<void> {
   if (!/^[a-z0-9.-]+$/u.test(name)) throw new Error("Invalid private filename");
-  const path = join(home, name),
+  const path = await privatePath(home, name, "file"),
     tmp = join(home, "write-" + randomUUID() + ".tmp");
   try {
     await regularFile(path);
