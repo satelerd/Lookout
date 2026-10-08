@@ -46,16 +46,16 @@ npm run lookout -- run --config examples/concerts.json --messages examples/conce
 
 ## Lo que ya hace
 
-| Paso | Implementado |
-| --- | --- |
-| Leer novedades | Archivos JSON autorizados; filtra un grupo exacto y IDs nuevos |
-| Mantener preferencias | Configuración local del dueño; ningún mensaje puede cambiarla |
-| Investigar | Demo determinista o `codex exec` con búsqueda web, opt-in |
-| Elegir novedades | Presupuesto y moneda exactos; fuentes HTTPS permitidas; máximo 3 opciones |
-| Evitar repetición | URL normalizada + precio + moneda; conserva historial local |
-| Preparar resumen | Texto corto con enlace directo por opción; silencio si no hay novedades |
-| Entregar | Outbox local con recibo; contrato intercambiable para un futuro transporte |
-| Controlar | Aprobación de configuración, frecuencia mínima, pausa y terminación |
+| Paso                  | Implementado                                                               |
+| --------------------- | -------------------------------------------------------------------------- |
+| Leer novedades        | Archivos JSON autorizados; filtra un grupo exacto y IDs nuevos             |
+| Mantener preferencias | Configuración local del dueño; ningún mensaje puede cambiarla              |
+| Investigar            | Demo determinista o `codex exec` con búsqueda web, opt-in                  |
+| Elegir novedades      | Presupuesto y moneda exactos; fuentes HTTPS permitidas; máximo 3 opciones  |
+| Evitar repetición     | URL normalizada + precio + moneda; conserva historial local                |
+| Preparar resumen      | Texto corto con enlace directo por opción; silencio si no hay novedades    |
+| Entregar              | Outbox local con recibo; contrato intercambiable para un futuro transporte |
+| Controlar             | Aprobación de configuración, frecuencia mínima, pausa y terminación        |
 
 La deduplicación no entiende todos los duplicados semánticos: otro URL puede representar la misma oferta. Un cambio de precio sí cuenta como novedad. Se guardan hasta 1.000 hallazgos y 10.000 IDs; la memoria es finita.
 

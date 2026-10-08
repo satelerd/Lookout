@@ -12,21 +12,8 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '22'
-      - name: Prepare initial lockfile and formatting (bootstrap only)
-        if: hashFiles('package-lock.json') == ''
-        run: |
-          npm install --ignore-scripts
-          npm run format
-          node --input-type=module <<'JS'
-          import { execFileSync } from 'node:child_process';
-          import { readFileSync } from 'node:fs';
-          const paths = execFileSync('git', ['ls-files'], { encoding: 'utf8' }).trim().split('\n');
-          paths.push('package-lock.json');
-          for (const path of paths) {
-            console.log('LOOKOUT_FILE ' + JSON.stringify({ path, content: readFileSync(path, 'utf8') }));
-          }
-          JS
+          node-version: "22"
+          cache: npm
       - run: npm ci --ignore-scripts
       - run: npm run check
       - run: npm run demo

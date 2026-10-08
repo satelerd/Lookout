@@ -1,22 +1,14 @@
 {
   "version": 1,
   "groupId": "demo-travel",
-  "allowedGroupIds": [
-    "demo-travel"
-  ],
+  "allowedGroupIds": ["demo-travel"],
   "objective": "Comparar un viaje ficticio de fin de semana",
-  "preferences": [
-    "Dos personas",
-    "Equipaje incluido",
-    "Fechas flexibles"
-  ],
+  "preferences": ["Dos personas", "Equipaje incluido", "Fechas flexibles"],
   "budget": {
     "amount": 600,
     "currency": "EUR"
   },
   "intervalMinutes": 720,
-  "sourceHosts": [
-    "example.org"
-  ],
+  "sourceHosts": ["example.org"],
   "maxItems": 3
 }

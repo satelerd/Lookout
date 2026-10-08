@@ -6,7 +6,7 @@ Read README.md, docs/INSTALL.md and docs/WHATSAPP.md before installation.
 
 1. Explain the current scope: local prototype, demo/outbox, optional official Codex CLI; no bundled QR, live WhatsApp or scheduler.
 2. Run the synthetic demo and checks using docs/INSTALL.md. Never request real chat exports for the demo.
-3. Ask the owner for objective, preferences, budget/currency, exact group, source hosts and cadence. Create private *.local.json config; keep it out of Git.
+3. Ask the owner for objective, preferences, budget/currency, exact group, source hosts and cadence. Create private \*.local.json config; keep it out of Git.
 4. The owner performs official Codex login. Never read/copy auth files, extract tokens, set secrets or alter existing account sessions.
 5. Before real messages reach Codex, explain what data leaves the machine and obtain the owner/group's consent.
 6. Present the exact destination/configuration, test output and limits. A request to install does not authorize a real WhatsApp message or periodic activation.

@@ -89,6 +89,7 @@ Antes de implementar y activar un transporte, hace falta revisar riesgos, resolv
 
 ## Diagnóstico
 
+- `pause` y `terminate` impiden las próximas ejecuciones; no interrumpen un ciclo que ya mantiene el lock. Para detener ese proceso usa Ctrl+C y después revisa lock/reserva antes de continuar.
 - `State is locked`: comprueba procesos en ejecución. Un crash puede dejar `.lookout/lock`; bórralo sólo tras confirmar que ningún proceso lo usa.
 - `Configuration changed`: revisa todo el acuerdo y aprueba el digest nuevo.
 - `Unresolved delivery`: no repitas el envío. Revisa `state.json.pending` y busca el recibo exacto por ID en el transporte. En el outbox local, comprueba que ID, grupo y texto del archivo coinciden antes de limpiar únicamente `pending`. Si no puedes confirmar el resultado, deja la búsqueda pausada. No borres el historial para forzar un reenvío.

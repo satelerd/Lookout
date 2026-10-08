@@ -7,26 +7,42 @@ import { readJson } from "./storage.js";
 import { type Provider, type ResearchInput } from "./model.js";
 
 export const outputSchema = {
-  type: "object", additionalProperties: false, required: ["findings"],
-  properties: { findings: { type: "array", items: {
-    type: "object", additionalProperties: false,
-    required: ["title", "detail", "url", "amount", "currency"],
-    properties: {
-      title: { type: "string" }, detail: { type: "string" }, url: { type: "string" },
-      amount: { type: "number" }, currency: { type: "string" },
+  type: "object",
+  additionalProperties: false,
+  required: ["findings"],
+  properties: {
+    findings: {
+      type: "array",
+      items: {
+        type: "object",
+        additionalProperties: false,
+        required: ["title", "detail", "url", "amount", "currency"],
+        properties: {
+          title: { type: "string" },
+          detail: { type: "string" },
+          url: { type: "string" },
+          amount: { type: "number" },
+          currency: { type: "string" },
+        },
+      },
     },
-  } } },
+  },
 };
 /** Synthetic deterministic candidate, never represented as a real search. */
 export class DemoProvider implements Provider {
   async research(input: ResearchInput): Promise<unknown> {
-    return { findings: [{
-      title: "Opción ficticia para probar Lookout",
-      detail: "DEMO: cumple el presupuesto de ejemplo. No es una oferta real.",
-      url: `https://${input.config.sourceHosts[0]}/lookout-demo`,
-      amount: Math.floor(input.config.budget.amount * 0.8),
-      currency: input.config.budget.currency,
-    }] };
+    return {
+      findings: [
+        {
+          title: "Opción ficticia para probar Lookout",
+          detail:
+            "DEMO: cumple el presupuesto de ejemplo. No es una oferta real.",
+          url: `https://${input.config.sourceHosts[0]}/lookout-demo`,
+          amount: Math.floor(input.config.budget.amount * 0.8),
+          currency: input.config.budget.currency,
+        },
+      ],
+    };
   }
 }
 export function researchPrompt(input: ResearchInput): string {
@@ -45,44 +61,95 @@ export function researchPrompt(input: ResearchInput): string {
 }
 export function codexArgs(dir: string): string[] {
   return [
-    "exec", "--ignore-user-config", "--ignore-rules", "--strict-config",
-    "--ephemeral", "--skip-git-repo-check", "--sandbox", "read-only",
-    "-c", 'approval_policy="never"', "-c", 'forced_login_method="chatgpt"',
-    "-c", 'web_search="live"', "-c", "features.shell_tool=false",
-    "-c", "features.unified_exec=false", "-c", "features.apps=false",
-    "-c", "features.plugins=false", "-c", "project_doc_max_bytes=0",
-    "--output-schema", join(dir, "schema.json"), "--output-last-message", join(dir, "result.json"), "-",
+    "exec",
+    "--ignore-user-config",
+    "--ignore-rules",
+    "--strict-config",
+    "--ephemeral",
+    "--skip-git-repo-check",
+    "--sandbox",
+    "read-only",
+    "-c",
+    'approval_policy="never"',
+    "-c",
+    'forced_login_method="chatgpt"',
+    "-c",
+    'web_search="live"',
+    "-c",
+    "features.shell_tool=false",
+    "-c",
+    "features.unified_exec=false",
+    "-c",
+    "features.apps=false",
+    "-c",
+    "features.plugins=false",
+    "-c",
+    "project_doc_max_bytes=0",
+    "--output-schema",
+    join(dir, "schema.json"),
+    "--output-last-message",
+    join(dir, "result.json"),
+    "-",
   ];
 }
 /** An opt-in local CLI subprocess using official login; no token inspection. */
 export class CodexProvider implements Provider {
   async research(input: ResearchInput): Promise<unknown> {
-    const help = await promisify(execFile)("codex", ["exec", "--help"], { timeout: 10000, maxBuffer: 100000 });
-    for (const flag of ["--ignore-user-config", "--ignore-rules", "--strict-config", "--ephemeral", "--output-schema"])
-      if (!help.stdout.includes(flag)) throw new Error("Codex CLI is incompatible. Update through the official install instructions; do not remove safety flags.");
+    const help = await promisify(execFile)("codex", ["exec", "--help"], {
+      timeout: 10000,
+      maxBuffer: 100000,
+    });
+    for (const flag of [
+      "--ignore-user-config",
+      "--ignore-rules",
+      "--strict-config",
+      "--ephemeral",
+      "--output-schema",
+    ])
+      if (!help.stdout.includes(flag))
+        throw new Error(
+          "Codex CLI is incompatible. Update through the official install instructions; do not remove safety flags.",
+        );
     const dir = await mkdtemp(join(tmpdir(), "lookout-research-"));
     try {
-      await writeFile(join(dir, "schema.json"), JSON.stringify(outputSchema), { mode: 0o600 });
+      await writeFile(join(dir, "schema.json"), JSON.stringify(outputSchema), {
+        mode: 0o600,
+      });
       // Authentication stays with Codex. Deliberately omit provider API keys and unrelated env secrets.
       const env: NodeJS.ProcessEnv = {};
       for (const key of ["PATH", "HOME", "TMPDIR", "CODEX_HOME"])
         if (process.env[key]) env[key] = process.env[key];
       await new Promise<void>((resolve, reject) => {
-        const child = spawn("codex", codexArgs(dir), { cwd: dir, env, shell: false, stdio: ["pipe", "ignore", "ignore"] });
+        const child = spawn("codex", codexArgs(dir), {
+          cwd: dir,
+          env,
+          shell: false,
+          stdio: ["pipe", "ignore", "ignore"],
+        });
         const timer = setTimeout(() => {
           child.kill("SIGTERM");
           reject(new Error("Codex timed out; no delivery or state change."));
         }, 180000);
-        child.once("error", () => { clearTimeout(timer); reject(new Error("Could not start Codex CLI")); });
+        child.once("error", () => {
+          clearTimeout(timer);
+          reject(new Error("Could not start Codex CLI"));
+        });
         child.once("close", (code) => {
           clearTimeout(timer);
           if (code === 0) resolve();
-          else reject(new Error("Codex failed. Check official login, quota and CLI compatibility; no state changed."));
+          else
+            reject(
+              new Error(
+                "Codex failed. Check official login, quota and CLI compatibility; no state changed.",
+              ),
+            );
         });
         child.stdin.on("error", () => {});
         child.stdin.end(researchPrompt(input));
       });
       return await readJson(join(dir, "result.json"));
-    } finally { await rm(dir, { recursive: true, force: true }); }
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
   }
 }
