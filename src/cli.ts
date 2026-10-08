@@ -18,6 +18,7 @@ import {
   checkoutRoot,
 } from "./private.js";
 import { workflow } from "./workflows-cli.js";
+import { regularFile } from "./private.js";
 
 async function main(): Promise<void> {
   if (
@@ -70,6 +71,7 @@ async function main(): Promise<void> {
     path: string,
     messages = false,
   ): Promise<string> => {
+    await regularFile(resolve(path));
     const full = await canonicalPath(resolve(path));
     const samples = ["apartments", "travel", "concerts"];
     const permitted = await Promise.all(

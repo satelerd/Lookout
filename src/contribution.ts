@@ -437,7 +437,7 @@ export async function publishBundle(
     );
   const target = await api("repos/" + b.repository);
   if (
-    target.private ||
+    target.private !== false ||
     target.full_name !== b.repository ||
     typeof target.default_branch !== "string"
   )
@@ -445,7 +445,7 @@ export async function publishBundle(
   if (b.sourceRepository !== b.repository) {
     const source = await api("repos/" + b.sourceRepository);
     if (
-      source.private ||
+      source.private !== false ||
       source.full_name !== b.sourceRepository ||
       !source.fork ||
       source.parent?.full_name !== b.repository ||
