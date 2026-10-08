@@ -1,0 +1,11 @@
+node_modules/
+dist/
+.lookout/
+.env
+.env.*
+*.log
+auth.json
+sessions/
+*.local.json
+*.local.jsonl
+.DS_Store

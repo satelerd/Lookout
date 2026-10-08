@@ -1,0 +1,12 @@
+[
+  {
+    "id": "synthetic-concerts-1",
+    "groupId": "demo-concerts",
+    "text": "Dos entradas; mantengamos el presupuesto acordado."
+  },
+  {
+    "id": "synthetic-concerts-2",
+    "groupId": "demo-other-group",
+    "text": "Este mensaje ficticio queda fuera del grupo autorizado."
+  }
+]

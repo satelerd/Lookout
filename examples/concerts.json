@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "groupId": "demo-concerts",
+  "allowedGroupIds": [
+    "demo-concerts"
+  ],
+  "objective": "Encontrar entradas ficticias para un concierto",
+  "preferences": [
+    "Dos entradas",
+    "Venta oficial",
+    "Sin reventa"
+  ],
+  "budget": {
+    "amount": 100,
+    "currency": "USD"
+  },
+  "intervalMinutes": 120,
+  "sourceHosts": [
+    "example.org"
+  ],
+  "maxItems": 3
+}

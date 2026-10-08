@@ -1,0 +1,12 @@
+[
+  {
+    "id": "synthetic-apartments-1",
+    "groupId": "demo-apartments",
+    "text": "Dos dormitorios; mantengamos el presupuesto acordado."
+  },
+  {
+    "id": "synthetic-apartments-2",
+    "groupId": "demo-other-group",
+    "text": "Este mensaje ficticio queda fuera del grupo autorizado."
+  }
+]

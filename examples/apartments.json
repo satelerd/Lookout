@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "groupId": "demo-apartments",
+  "allowedGroupIds": [
+    "demo-apartments"
+  ],
+  "objective": "Buscar departamentos ficticios de dos dormitorios",
+  "preferences": [
+    "Dos dormitorios",
+    "Cerca de transporte",
+    "Sin compra automática"
+  ],
+  "budget": {
+    "amount": 900,
+    "currency": "USD"
+  },
+  "intervalMinutes": 360,
+  "sourceHosts": [
+    "example.org"
+  ],
+  "maxItems": 3
+}

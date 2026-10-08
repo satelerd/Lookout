@@ -1,0 +1,12 @@
+[
+  {
+    "id": "synthetic-travel-1",
+    "groupId": "demo-travel",
+    "text": "Dos personas; mantengamos el presupuesto acordado."
+  },
+  {
+    "id": "synthetic-travel-2",
+    "groupId": "demo-other-group",
+    "text": "Este mensaje ficticio queda fuera del grupo autorizado."
+  }
+]
