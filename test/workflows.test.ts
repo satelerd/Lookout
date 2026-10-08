@@ -371,7 +371,17 @@ test("adoption and rollback switch only reviewed immutable code, preserving priv
     const repo = join(root, "checkout"),
       home = join(root, "private");
     await mkdir(join(repo, "src"), { recursive: true });
-    const isolated: Run = async (command, args, cwd) => (await exec(command, args, { cwd: cwd ?? repo, env: { ...process.env, GIT_CONFIG_GLOBAL: "/dev/null", GIT_CONFIG_NOSYSTEM: "1" } })).stdout;
+    const isolated: Run = async (command, args, cwd) =>
+      (
+        await exec(command, args, {
+          cwd: cwd ?? repo,
+          env: {
+            ...process.env,
+            GIT_CONFIG_GLOBAL: "/dev/null",
+            GIT_CONFIG_NOSYSTEM: "1",
+          },
+        })
+      ).stdout;
     const git = async (...args: string[]) =>
       (await exec("git", args, { cwd: repo })).stdout.trim();
     await git("init", "--quiet");
@@ -407,8 +417,17 @@ test("adoption and rollback switch only reviewed immutable code, preserving priv
     await configure(home, syntheticAnswers());
     const before = await readFile(join(home, "config.json"), "utf8");
     const plan = await planUpdate(home, repo, to, isolated);
-    await assert.rejects(switchUpdate(home, repo, plan.id, "adopt", "yes", isolated));
-    await switchUpdate(home, repo, plan.id, "adopt", "adopt-code:" + plan.id, isolated);
+    await assert.rejects(
+      switchUpdate(home, repo, plan.id, "adopt", "yes", isolated),
+    );
+    await switchUpdate(
+      home,
+      repo,
+      plan.id,
+      "adopt",
+      "adopt-code:" + plan.id,
+      isolated,
+    );
     assert.equal(await git("rev-parse", "HEAD"), to);
     await switchUpdate(
       home,
@@ -425,33 +444,79 @@ test("adoption and rollback switch only reviewed immutable code, preserving priv
   }
 });
 
-test("fork ownership and public target cannot be inferred from a contributor request", async () => fixture(async (home, repo) => {
-  const id = await bundleFixture(home, repo, "Synthetic feature", "synthetic-contributor/lookout");
-  await reviewBundle(home, id);
-  await consentBundle(home, id, "synthetic-contributor", "publish-one-draft:" + id + ":" + repoName + ":synthetic-contributor");
-  let writes = 0;
-  const runner: Run = async (_command, args) => {
-    if (args.includes("--method")) writes++;
-    const path = args[1];
-    if (path === "user") return JSON.stringify({ login: "synthetic-contributor", id: 1, type: "User" });
-    if (path === "repos/" + repoName) return JSON.stringify({ full_name: repoName, private: false, default_branch: "main" });
-    return JSON.stringify({ full_name: "synthetic-contributor/lookout", private: false, fork: true, parent: { full_name: repoName }, owner: { login: "other-account" } });
-  };
-  await assert.rejects(publishBundle(home, id, runner), /existing public fork/u);
-  assert.equal(writes, 0);
-}));
-test("a changed public base blocks publication before remote mutations", async () => fixture(async (home, repo) => {
-  const id = await bundleFixture(home, repo);
-  await reviewBundle(home, id);
-  await consentBundle(home, id, "synthetic-contributor", "publish-one-draft:" + id + ":" + repoName + ":synthetic-contributor");
-  let writes = 0;
-  const runner: Run = async (_command, args) => {
-    if (args.includes("--method")) writes++;
-    const path = args[1];
-    if (path === "user") return JSON.stringify({ login: "synthetic-contributor", id: 1, type: "User" });
-    if (path === "repos/" + repoName) return JSON.stringify({ full_name: repoName, private: false, default_branch: "main" });
-    return JSON.stringify({ object: { sha: "e".repeat(40) } });
-  };
-  await assert.rejects(publishBundle(home, id, runner), /base changed/u);
-  assert.equal(writes, 0);
-}));
+test("fork ownership and public target cannot be inferred from a contributor request", async () =>
+  fixture(async (home, repo) => {
+    const id = await bundleFixture(
+      home,
+      repo,
+      "Synthetic feature",
+      "synthetic-contributor/lookout",
+    );
+    await reviewBundle(home, id);
+    await consentBundle(
+      home,
+      id,
+      "synthetic-contributor",
+      "publish-one-draft:" + id + ":" + repoName + ":synthetic-contributor",
+    );
+    let writes = 0;
+    const runner: Run = async (_command, args) => {
+      if (args.includes("--method")) writes++;
+      const path = args[1];
+      if (path === "user")
+        return JSON.stringify({
+          login: "synthetic-contributor",
+          id: 1,
+          type: "User",
+        });
+      if (path === "repos/" + repoName)
+        return JSON.stringify({
+          full_name: repoName,
+          private: false,
+          default_branch: "main",
+        });
+      return JSON.stringify({
+        full_name: "synthetic-contributor/lookout",
+        private: false,
+        fork: true,
+        parent: { full_name: repoName },
+        owner: { login: "other-account" },
+      });
+    };
+    await assert.rejects(
+      publishBundle(home, id, runner),
+      /existing public fork/u,
+    );
+    assert.equal(writes, 0);
+  }));
+test("a changed public base blocks publication before remote mutations", async () =>
+  fixture(async (home, repo) => {
+    const id = await bundleFixture(home, repo);
+    await reviewBundle(home, id);
+    await consentBundle(
+      home,
+      id,
+      "synthetic-contributor",
+      "publish-one-draft:" + id + ":" + repoName + ":synthetic-contributor",
+    );
+    let writes = 0;
+    const runner: Run = async (_command, args) => {
+      if (args.includes("--method")) writes++;
+      const path = args[1];
+      if (path === "user")
+        return JSON.stringify({
+          login: "synthetic-contributor",
+          id: 1,
+          type: "User",
+        });
+      if (path === "repos/" + repoName)
+        return JSON.stringify({
+          full_name: repoName,
+          private: false,
+          default_branch: "main",
+        });
+      return JSON.stringify({ object: { sha: "e".repeat(40) } });
+    };
+    await assert.rejects(publishBundle(home, id, runner), /base changed/u);
+    assert.equal(writes, 0);
+  }));

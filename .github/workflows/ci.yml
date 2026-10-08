@@ -16,16 +16,8 @@ jobs:
         with:
           node-version: "22"
           cache: npm
-      - name: Format authoring snapshot (temporary bootstrap)
-        run: |
-          npm ci --ignore-scripts
-          npm run format
-          node --input-type=module <<'JS'
-          import { execFileSync } from 'node:child_process';
-          import { readFileSync } from 'node:fs';
-          const paths = execFileSync('git', ['ls-files'], { encoding: 'utf8' }).trim().split('\n');
-          for (const path of paths) console.log('LOOKOUT_FILE ' + JSON.stringify({ path, content: readFileSync(path, 'utf8') }));
-          JS
+      - run: npm ci --ignore-scripts
       - run: npm run check
       - run: npm run demo
       - run: npm run demo:onboarding
+      - run: npm run lookout -- doctor

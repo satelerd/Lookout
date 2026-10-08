@@ -57,7 +57,10 @@ export async function checkoutRoot(start = process.cwd()): Promise<string> {
       await lstat(join(path, ".git"));
       return path;
     } catch (e) {
-      if (!["ENOENT", "ENOTDIR"].includes((e as NodeJS.ErrnoException).code ?? "")) throw e;
+      if (
+        !["ENOENT", "ENOTDIR"].includes((e as NodeJS.ErrnoException).code ?? "")
+      )
+        throw e;
     }
     if (dirname(path) === path) return await canonicalPath(start);
     path = dirname(path);
@@ -81,7 +84,10 @@ export async function assertOutsideCheckout(
         "Private data cannot be stored inside another Git repository.",
       );
     } catch (e) {
-      if (!["ENOENT", "ENOTDIR"].includes((e as NodeJS.ErrnoException).code ?? "")) throw e;
+      if (
+        !["ENOENT", "ENOTDIR"].includes((e as NodeJS.ErrnoException).code ?? "")
+      )
+        throw e;
     }
     if (dirname(parent) === parent) return full;
     parent = dirname(parent);
@@ -111,7 +117,10 @@ export async function privateHome(
   try {
     await check();
   } catch (e) {
-    if (!["ENOENT", "ENOTDIR"].includes((e as NodeJS.ErrnoException).code ?? "")) throw e;
+    if (
+      !["ENOENT", "ENOTDIR"].includes((e as NodeJS.ErrnoException).code ?? "")
+    )
+      throw e;
   }
   if (create) {
     await mkdir(home, { recursive: true, mode: 0o700 });
@@ -148,7 +157,10 @@ export async function writePrivate(
   try {
     await regularFile(path);
   } catch (e) {
-    if (!["ENOENT", "ENOTDIR"].includes((e as NodeJS.ErrnoException).code ?? "")) throw e;
+    if (
+      !["ENOENT", "ENOTDIR"].includes((e as NodeJS.ErrnoException).code ?? "")
+    )
+      throw e;
   }
   try {
     await writeFile(tmp, JSON.stringify(value, null, 2) + "\n", {

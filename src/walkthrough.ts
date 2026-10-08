@@ -71,7 +71,8 @@ export async function walkthrough(): Promise<unknown> {
     const base = "a".repeat(40),
       publicRepo = "demo/lookout";
     const execute: Run = async (command, args) => {
-      if (args.some(arg => arg.includes("arbitrary shell"))) throw new Error("Untrusted metadata became an instruction");
+      if (args.some((arg) => arg.includes("arbitrary shell")))
+        throw new Error("Untrusted metadata became an instruction");
       if (command === "git") return "+export const feature = true;\n";
       if (args[0] === "search")
         return JSON.stringify([
