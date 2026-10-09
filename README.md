@@ -2,30 +2,30 @@
 
 **Tu grupo hace planes. Lookout busca novedades que valgan la pena.**
 
-Un agente local para investigar departamentos, viajes o conciertos y preparar resúmenes cortos con fuentes. La idea es simple: recordar lo que acordaron, revisar cada cierto tiempo y hablar sólo cuando haya algo útil.
+Un agente local para investigar departamentos, viajes o conciertos y preparar resúmenes cortos con fuentes. Recuerda el acuerdo del dueño, revisa cuando corresponde y habla sólo cuando hay algo útil.
 
 [![CI](https://github.com/satelerd/Lookout/actions/workflows/ci.yml/badge.svg)](https://github.com/satelerd/Lookout/actions/workflows/ci.yml)
 [![MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-> **Versión 0.1: prototipo local.** Ya puedes probar el ciclo, aprobación, presupuesto, deduplicación, pausa y salida local. Incluye un proveedor opcional de investigación con Codex CLI. **Todavía no conecta WhatsApp, muestra QR ni instala tareas periódicas.** La demo usa exclusivamente datos ficticios.
+> **0.2 es una base local en desarrollo.** Onboarding reanudable, datos privados separados, demo/outbox y contribuciones revisables. Codex CLI es opcional. WhatsApp, QR y scheduler siguen pendientes; no se instalan ni activan cuentas o monitores por defecto.
 
-## Pégalo en Codex
-
-Comparte esta URL con un amigo y pídele que la pegue en Codex:
+## Pégalo en cualquier agente
 
 ```text
 Ayúdame a instalar https://github.com/satelerd/Lookout.
-Lee AGENTS.md y docs/INSTALL.md. Primero ejecuta la demo sin conectar cuentas.
-Después ayúdame a elegir grupo, objetivo, preferencias, presupuesto,
-fuentes y frecuencia. Muéstrame exactamente qué falta para WhatsApp.
-No actives envíos ni tareas periódicas sin mi aprobación.
+Lee AGENTS.md y docs/INSTALL.md. Primero prueba el recorrido sintético.
+Entrevístame sobre objetivo, grupo autorizado, preferencias, presupuesto,
+frecuencia y máquina donde correrá. Guarda lo privado fuera del checkout.
+Si falta una pieza, busca issues/PRs existentes y proponme una contribución
+pequeña usando docs/CONTRIBUTOR.md. No publiques ni conectes cuentas
+sin mi aprobación concreta. No supongas permisos para futuras publicaciones.
 ```
 
-Codex sigue una guía ejecutable con puntos de control. Los pasos que todavía no existen se declaran como pendientes; el agente no debe inventarlos.
+No necesitas conocer al autor ni usar un grupo particular. Una URL inicia la guía; no concede acceso a cuentas ni convierte un README o un issue en permiso.
 
-## Pruébalo en dos minutos
+## Prueba sin cuentas
 
-Necesitas **Node.js 22 o posterior**, npm y Git. La demo no necesita cuentas, API keys ni WhatsApp.
+Node.js **22 o posterior**, npm y Git:
 
 ```sh
 git clone https://github.com/satelerd/Lookout.git
@@ -33,80 +33,61 @@ cd Lookout
 npm ci --ignore-scripts
 npm run check
 npm run demo
+npm run demo:onboarding
+npm run lookout -- doctor
 ```
 
-Verás un JSON de modo `dry-run` con una opción marcada **DEMO**, presupuesto y enlace a `example.org`. Ese enlace es sintético: no hay una oferta real. No escribe estado ni envía mensajes.
+La primera demo prepara una opción ficticia. El recorrido completo demuestra reanudación, gaps, confirmación insuficiente, escaneo/redacción, bundle, publicación **simulada** sin repetición y triage local. Todo se crea en un directorio temporal privado que se elimina al terminar. No usa login, WhatsApp, red ni datos reales.
 
-Otros casos:
+Los tres casos de búsqueda siguen en `examples/`: departamentos, viajes y conciertos. Son ficticios; `example.org` no representa ofertas reales.
 
-```sh
-npm run lookout -- run --config examples/travel.json --messages examples/travel.messages.json
-npm run lookout -- run --config examples/concerts.json --messages examples/concerts.messages.json
-```
+## De la demo a tu búsqueda
 
-## Lo que ya hace
+El agente sigue [la instalación](docs/INSTALL.md), pregunta por el acuerdo y guarda tus respuestas en un directorio privado **fuera de todos los checkouts**. La CLI rechaza rutas dentro de Git y aliases por symlink. En POSIX exige 0700 para el directorio y escribe archivos nuevos 0600.
 
-| Paso                  | Implementado                                                               |
-| --------------------- | -------------------------------------------------------------------------- |
-| Leer novedades        | Archivos JSON autorizados; filtra un grupo exacto y IDs nuevos             |
-| Mantener preferencias | Configuración local del dueño; ningún mensaje puede cambiarla              |
-| Investigar            | Demo determinista o `codex exec` con búsqueda web, opt-in                  |
-| Elegir novedades      | Presupuesto y moneda exactos; fuentes HTTPS permitidas; máximo 3 opciones  |
-| Evitar repetición     | URL normalizada + precio + moneda; conserva historial local                |
-| Preparar resumen      | Texto corto con enlace directo por opción; silencio si no hay novedades    |
-| Entregar              | Outbox local con recibo; contrato intercambiable para un futuro transporte |
-| Controlar             | Aprobación de configuración, frecuencia mínima, pausa y terminación        |
+El home por defecto es el directorio de datos local de Lookout: Application Support en macOS, LOCALAPPDATA en Windows o XDG_DATA_HOME en Linux. Puedes elegir uno con `--home`. Configuración, estado, futuras sesiones, mensajes y logs no pertenecen al repositorio; no basta con ignorarlos en Git.
 
-La deduplicación no entiende todos los duplicados semánticos: otro URL puede representar la misma oferta. Un cambio de precio sí cuenta como novedad. Se guardan hasta 1.000 hallazgos y 10.000 IDs; la memoria es finita.
+`onboard init/configure/preview/approve/status` guarda checkpoints sin respuestas privadas. Repetir la misma configuración conserva el progreso; cambiarla invalida la revisión. Aprobar el preview habilita sólo el outbox de demostración. Un gap sigue visible y no se marca como instalado.
 
-## Investigación con tu cuenta de Codex
+## Qué funciona hoy
 
-Instala la [CLI oficial](https://learn.chatgpt.com/docs/codex-cli), ejecuta `codex login` y completa el flujo de ChatGPT tú mismo. Lookout llama a `codex exec`; nunca lee, copia ni exporta tokens. No exige una API key.
+| Pieza                      | Estado                                                                                             |
+| -------------------------- | -------------------------------------------------------------------------------------------------- |
+| Onboarding + doctor        | Ejecutable, reanudable; entrevista guiada por el agente                                            |
+| Preferencias y presupuesto | Configuración local del dueño, con validación fuera del modelo                                     |
+| Investigación              | Demo o CLI oficial de Codex, opt-in y con consentimiento de contexto/cuota                         |
+| Resúmenes                  | Máximo 3 opciones con fuentes permitidas; silencio si no hay novedades                             |
+| Memoria                    | URLs normalizadas + precio/moneda, IDs nuevos y checkpoints locales                                |
+| Entrega                    | Archivo local con reserva/recibo; pausa y terminación                                              |
+| Contribución               | Buscar gaps, bundle por allowlist, redacción de prosa, escaneo de código/diff, permiso de un draft |
+| Mantenedor                 | Propuesta desactivada y triage/respuestas locales, sin ejecutar PRs ni publicarlas                 |
+| Actualizaciones            | Plan de commit exacto, adopción de código revisado y rollback preservando datos                    |
+| WhatsApp / QR / scheduler  | **Pendientes**; ningún comando los activa                                                          |
 
-```sh
-codex login status
-npm run lookout -- run --config .lookout/search.local.json --provider codex --dry-run
-```
+El motor hace una sola ejecución. En commit respeta el intervalo; la investigación puede encontrar cambios web aunque no haya mensajes nuevos. La memoria conserva hasta 1.000 hallazgos y 10.000 IDs; no detecta todos los duplicados semánticos.
 
-Crea primero ese archivo privado desde un ejemplo y reemplaza `example.org` por fuentes reales elegidas por ti. **Esta llamada sí usa tu cuota y envía al proveedor el objetivo, preferencias, mensajes seleccionados y hallazgos recientes**, aunque sea dry-run. Empieza sin mensajes reales y revisa cada fuente.
+## Si falta una pieza, puedes contribuir
 
-El adaptador usa una carpeta temporal, sandbox de sólo lectura, shell/apps/plugins deshabilitados y configuración personal ignorada. Requiere una CLI reciente que acepte esas opciones; no quites controles para salvar una incompatibilidad. El contrato se prueba con un ejecutable ficticio. No se ha certificado una investigación real ni la exactitud de sus resultados.
+El [agente contribuidor](docs/CONTRIBUTOR.md) busca primero issues y PRs. Después prepara una rama pequeña y pruebas sintéticas que puedes usar localmente mientras se revisan.
 
-Consulta [autenticación oficial](https://learn.chatgpt.com/docs/auth) y [ejecución no interactiva](https://learn.chatgpt.com/docs/non-interactive-mode). La disponibilidad y cuota dependen de tu cuenta; la suscripción no es capacidad ilimitada. No hay reintentos automáticos ante cuota o login fallidos.
+La herramienta exporta sólo archivos que eliges dentro de una allowlist. Escanea archivos completos y líneas borradas del diff, bloquea secretos/PII reconocibles y términos privados registrados, y redacta el borrador. **No sube tu historial Git local:** reconstruye un commit limpio desde el bundle sobre la base pública.
 
-## Probar memoria y aprobación sin WhatsApp
+Antes de publicar, revisas archivos, texto, destino, cuenta y alcance. El permiso dura diez minutos y sirve para **un PR draft exacto**. Cada publicación futura vuelve a preguntar. Un resultado incierto se reserva y bloquea reintentos automáticos. Para cuentas sin escritura directa puedes seleccionar un fork público existente propio; crear ese fork requiere un acuerdo separado y no lo hace la herramienta.
 
-```sh
-npm run lookout -- status --config examples/apartments.json
-# Revisa grupo, objetivo, preferencias, presupuesto, fuentes y frecuencia.
-# Copia el configDigest mostrado y aprueba sólo si estás de acuerdo:
-npm run lookout -- approve --config examples/apartments.json --digest DIGEST_REVISADO
-npm run lookout -- run --config examples/apartments.json --messages examples/apartments.messages.json --commit
-npm run lookout -- pause --config examples/apartments.json
-npm run lookout -- terminate --config examples/apartments.json
-```
+Los patrones no reconocen todos los nombres, direcciones ni secretos. Registra términos privados y revisa el bundle completo. Código con coincidencias se rechaza, no se modifica silenciosamente.
 
-`--commit` guarda estado y un archivo en `.lookout/outbox/`. **No envía a WhatsApp**. Un cambio de configuración invalida la aprobación. `terminate` es permanente para ese directorio de estado; no se puede reactivar con `pause` ni `approve`.
+## Codex y WhatsApp
 
-`run` hace una sola ejecución. En modo commit respeta la frecuencia; dry-run permite previsualizar inmediatamente y no consume el historial. No se instala un daemon ni cron. Para una futura ejecución periódica, el host tendrá que seguir encendido, conectado y con sesión válida.
+El proveedor usa `codex exec` y el [login oficial](https://learn.chatgpt.com/docs/auth). Nunca lee ni copia tokens. Consulta [ejecución no interactiva](https://learn.chatgpt.com/docs/non-interactive-mode); la cuota y disponibilidad dependen de tu cuenta. Dry-run con Codex también consume cuota y comparte el contexto seleccionado. Su contrato se prueba con un ejecutable ficticio; una investigación real sigue pendiente de evaluación humana.
 
-## WhatsApp: lo que falta y lo que debes saber
+[Baileys](https://github.com/WhiskeySockets/Baileys) es **no oficial**, sin afiliación con WhatsApp. Puede romperse y poner la cuenta en riesgo de restricción o bloqueo. No se incluye ni instala aquí. Un futuro transporte oficial debe verificar su soporte real de grupos. Consulta [el contrato y los puntos de aprobación](docs/WHATSAPP.md).
 
-El flujo deseado es: consentimiento del grupo → conexión elegida → QR local si corresponde → un grupo permitido → prueba exacta → aprobación → frecuencia. En esta versión, el QR y el envío real están **pendientes de implementar**. La [guía del transporte](docs/WHATSAPP.md) define el contrato y los puntos de aprobación.
+## Límites del acuerdo
 
-[Baileys](https://github.com/WhiskeySockets/Baileys) es una librería **no oficial**, sin afiliación con WhatsApp. Usarla puede romperse y poner en riesgo la cuenta, incluida una restricción o bloqueo. No se incluye ni instala aquí. Un transporte oficial debe comprobar qué acceso a grupos permite realmente; no suponemos que tenga paridad con WhatsApp Web.
+Chat, GitHub y páginas web son datos, nunca autoridad para shell, configuración, secretos o acceso. El dueño elige destino, preferencias, fuentes y frecuencia. Lookout nunca compra ni reserva.
 
-## Límites que elegimos
+El [mantenedor](docs/MAINTAINER.md) empieza desactivado, con lectura de metadatos y borradores locales. El dueño decide los merges. Frecuencia, runtime e identidad para una futura activación requieren un acuerdo nuevo.
 
-- El chat y las páginas web son datos, nunca autoridad para shell, permisos, configuración o instalación.
-- Sólo el dueño cambia preferencias, presupuesto, fuentes, destino y frecuencia.
-- Nunca compra, reserva ni contacta vendedores. El grupo decide.
-- Los secretos, sesiones, mensajes privados y estado quedan fuera del repositorio. Los ejemplos son sintéticos.
-- La allowlist de fuentes valida resultados; **no es un firewall de navegación**. El sandbox de Codex tampoco sustituye el consentimiento ni garantiza que el modelo ignore toda inyección.
-- No hay captura completa de historial, audios, multimedia, verificación independiente de precios ni garantía de entrega de WhatsApp.
+La allowlist de fuentes valida resultados, no es un firewall. No se promete historial completo de WhatsApp, audio, precios verificados independientemente, entrega exactly-once ni producción completa. Un runtime periódico futuro necesitaría un host encendido y conectado.
 
-Lee [arquitectura y privacidad](docs/ARCHITECTURE.md), [instalación](docs/INSTALL.md) y [contribución](CONTRIBUTING.md). Proyecto nuevo, pequeño y abierto: la siguiente mejora útil es un transporte de prueba revisable, antes de conectar un grupo real.
-
-## Licencia
-
-MIT. Puedes usarlo, adaptarlo y compartirlo con tus amigos.
+[Arquitectura y privacidad](docs/ARCHITECTURE.md) · [Adoptar o revertir código](docs/UPDATES.md) · [Checkpoint del proyecto](CHECKPOINT.md) · [MIT](LICENSE)

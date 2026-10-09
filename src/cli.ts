@@ -10,15 +10,35 @@ import {
 } from "./storage.js";
 import { DemoProvider, CodexProvider } from "./providers.js";
 import { planCycle, commitCycle } from "./engine.js";
+import {
+  defaultHome,
+  privateHome,
+  assertOutsideCheckout,
+  canonicalPath,
+  checkoutRoot,
+  privatePath,
+} from "./private.js";
+import { workflow } from "./workflows-cli.js";
+import { regularFile } from "./private.js";
 
 async function main(): Promise<void> {
+  if (
+    ["doctor", "onboard", "contribute", "maintainer", "update"].includes(
+      process.argv[2] ?? "",
+    )
+  ) {
+    await workflow(process.argv.slice(2));
+    return;
+  }
   const { values, positionals } = parseArgs({
     allowPositionals: true,
     strict: true,
     options: {
-      config: { type: "string", default: "examples/apartments.json" },
+      config: { type: "string" },
       messages: { type: "string" },
-      state: { type: "string", default: ".lookout" },
+      state: { type: "string" },
+      home: { type: "string", default: defaultHome() },
+      confirm: { type: "string" },
       provider: { type: "string", default: "demo" },
       commit: { type: "boolean", default: false },
       "dry-run": { type: "boolean", default: false },
@@ -28,7 +48,7 @@ async function main(): Promise<void> {
   const command = positionals[0] ?? "help";
   if (command === "help") {
     console.log(
-      "Lookout 0.1 — local prototype\nCommands: status | run [--dry-run] [--commit] | approve --digest HASH | pause | terminate\nOptions: --config FILE --messages FILE --state DIR --provider demo|codex\nDefault run = preview, no writes. Commit delivers ONLY to a local outbox. No WhatsApp adapter is bundled.",
+      "Lookout 0.2 — private onboarding and reviewed contributions\nWorkflows: doctor | onboard | contribute | maintainer | update\nCommands: status | run [--dry-run] [--commit] | approve --digest HASH | pause | terminate\nOptions: --home PRIVATE_DIR --config FILE --messages FILE --state PRIVATE_DIR --provider demo|codex\nDefault run = preview, no writes. Commit delivers ONLY to a local outbox. No WhatsApp adapter is bundled.",
     );
     return;
   }
@@ -41,9 +61,54 @@ async function main(): Promise<void> {
     throw new Error("Choose --commit or --dry-run");
   if (!["demo", "codex"].includes(values.provider))
     throw new Error("Unknown provider");
-  const config = parseConfig(await readJson(resolve(values.config)));
-  const dir = resolve(values.state);
+  const root = await checkoutRoot();
+  const home = await privateHome(
+    values.home,
+    root,
+    !values.state &&
+      (values.commit || ["approve", "pause", "terminate"].includes(command)),
+  );
+  const guardInput = async (
+    path: string,
+    messages = false,
+  ): Promise<string> => {
+    await regularFile(resolve(path));
+    const full = await canonicalPath(resolve(path));
+    const samples = ["apartments", "travel", "concerts"];
+    const permitted = await Promise.all(
+      samples.map((name) =>
+        canonicalPath(
+          join(
+            root,
+            "examples",
+            name + (messages ? ".messages.json" : ".json"),
+          ),
+        ),
+      ),
+    );
+    if (!permitted.includes(full)) await assertOutsideCheckout(full, root);
+    return full;
+  };
+  const dir = await assertOutsideCheckout(
+    values.state
+      ? await privatePath(values.state)
+      : await privatePath(home, "runtime"),
+    root,
+  );
   const execute = async (): Promise<void> => {
+    const config = parseConfig(
+      await readJson(
+        await guardInput(values.config ?? join(home, "config.json")),
+      ),
+    );
+    await privatePath(dir, "outbox");
+    if (
+      values.provider === "codex" &&
+      values.confirm !== "research-with-codex:" + configDigest(config)
+    )
+      throw new Error(
+        "Owner consent to send context and use quota is required: --confirm research-with-codex:CONFIG_DIGEST. A local demo approval is insufficient.",
+      );
     const state = await readState(dir, config);
     const digest = configDigest(config);
     if (command === "status") {
@@ -101,7 +166,7 @@ async function main(): Promise<void> {
       return;
     }
     const messages = values.messages
-      ? parseMessages(await readJson(resolve(values.messages)))
+      ? parseMessages(await readJson(await guardInput(values.messages, true)))
       : [];
     const now = new Date();
     const provider =

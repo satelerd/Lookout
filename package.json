@@ -1,6 +1,6 @@
 {
   "name": "lookout-local",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "description": "Short, sourced research updates for your group, under your control.",
   "license": "MIT",
@@ -16,7 +16,8 @@
     "test": "npm run build && node --test dist/test/*.test.js",
     "check": "npm run lint && npm run typecheck && npm test",
     "lookout": "node dist/src/cli.js",
-    "demo": "npm run build && node dist/src/cli.js run --config examples/apartments.json --messages examples/apartments.messages.json"
+    "demo": "npm run build && node dist/src/cli.js run --config examples/apartments.json --messages examples/apartments.messages.json",
+    "demo:onboarding": "npm run build && node dist/scripts/demo-onboarding.js"
   },
   "devDependencies": {
     "@types/node": "22.18.6",

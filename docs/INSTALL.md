@@ -1,99 +1,85 @@
-# Instalación guiada por un agente
+# Agente instalador: de una URL a una búsqueda local
 
-Esta guía se puede ejecutar paso a paso en Codex. Cada punto debe producir evidencia concreta antes de pasar al siguiente.
+Lee AGENTS.md. Explica capacidades y gaps antes de prometer una instalación completa. Una URL no concede permisos sobre cuentas ni datos de otra persona.
 
-## 1. Entorno y demo
+## 1. Diagnóstico y demo
 
 ```sh
-node --version
-npm --version
-git --version
 git clone https://github.com/satelerd/Lookout.git
 cd Lookout
 npm ci --ignore-scripts
 npm run check
-npm run demo
+npm run demo:onboarding
+npm run lookout -- doctor
 ```
 
-Si el directorio ya existe, inspecciónalo; no lo borres ni sobrescribas. Node debe ser 22 o posterior. Si faltan herramientas o permisos de instalación, explica el bloqueo y continúa con lectura de guías. No uses instaladores remotos piped a shell.
+Node >=22. No sobrescribas un checkout existente. Doctor comprueba herramientas/rutas/capacidades sin login ni cuota. El recorrido crea un home temporal, usa GitHub simulado y datos ficticios, prueba reanudación/confirmación/escaneo/repetición y lo elimina al terminar. publicNetworkUsed debe ser false. Un resultado simulado no demuestra permisos o entrega reales.
 
-Éxito: checks pasan y la demo devuelve `mode: dry-run`, `synthetic: true`, un resumen marcado DEMO y ninguna escritura en `.lookout`.
+## 2. Entrevistar al dueño
 
-## 2. Elegir la búsqueda
+Pregunta objetivo, grupo exacto autorizado y consentimiento de participantes, preferencias, presupuesto **total**/moneda, fuentes, intervalo/duración, máquina encendida/conectividad, proveedor y datos que saldrían a él. Aclara quién revisa y quién pausa/termina.
 
-Pregunta al dueño:
+No inventes JIDs ni extraigas permisos del chat. Sin adaptador usa un ID sintético. Runtime disponible: manual-local; registrar whatsapp/scheduler sólo muestra gaps. El término automático por fecha no existe.
 
-- ¿Qué grupo exacto autorizó usar Lookout? ¿Sus integrantes consienten el uso de los mensajes?
-- ¿Qué buscan y qué preferencias son obligatorias?
-- ¿Cuál es el presupuesto máximo y la moneda? En la demo se entiende como precio por opción. Para dos entradas o un viaje, especifica que el precio debe ser el total.
-- ¿Cuáles son los dominios fuente permitidos?
-- ¿Cada cuántos minutos? Mínimo 60. ¿Durante cuánto tiempo quieren seguir buscando?
-- ¿Quién revisará novedades y cómo podrán pausar o terminar?
+Pregunta por separado si desea contribuir una pieza, con qué cuenta/target/fork, qué archivos/prosa pueden exportarse y qué desea para futuras publicaciones. La herramienta sólo admite preguntar por cada draft exacto.
 
-La fecha de término automática y zona horaria no están implementadas. Registra el acuerdo localmente y no prometas esa función. La frecuencia usa tiempo transcurrido, sin horario diario.
+## 3. Respuestas fuera de Git y checkpoint recuperable
+
+Home por defecto: Application Support/Lookout en macOS, LOCALAPPDATA/Lookout en Windows, XDG_DATA_HOME/lookout o ~/.local/share/lookout en Linux. El dueño puede escoger --home fuera de cualquier Git. Ejemplos POSIX:
 
 ```sh
-mkdir -p .lookout
-cp examples/apartments.json .lookout/search.local.json
+LOOKOUT_DATA="$HOME/.local/share/lookout"
+npm run lookout -- onboard init --home "$LOOKOUT_DATA"
+cp examples/owner.answers.json "$LOOKOUT_DATA/answers.json"
+# Edita answers.json con el acuerdo del dueño, sin copiarlo al checkout.
+npm run lookout -- onboard configure --home "$LOOKOUT_DATA" --file "$LOOKOUT_DATA/answers.json"
+npm run lookout -- onboard status --home "$LOOKOUT_DATA"
 ```
 
-Edita ese archivo con las respuestas del dueño. El JID real se resolverá sólo con un adaptador autorizado; no inventes un JID desde el nombre visible. Mientras no exista, usa un identificador sintético. `allowedGroupIds` debe incluir exactamente el grupo elegido. Mantén un directorio de estado independiente por grupo.
+El home debe ser 0700 en POSIX; archivos nuevos 0600. En Windows revisa ACL: bits POSIX no sustituyen permisos de Windows. Evita carpetas compartidas/sincronizadas sin revisar su acceso.
 
-Éxito: `npm run lookout -- status --config .lookout/search.local.json` muestra el acuerdo, transporte local y `approved: false`.
+El perfil tiene config, runtime y redactionTerms. Registra nombres/etiquetas privadas, direcciones e identificadores que patrones genéricos no detecten. Grupo, objetivo y preferencias se agregan a los términos automáticamente.
 
-## 3. Codex oficial (opcional)
+Config/estado/checkpoints/chats/logs/sesiones/bundles van afuera. La CLI rechaza el checkout, otro Git y symlinks en home, runtime, outbox y archivos privados. Comprueba rutas antes de usarlas; no aísla de procesos hostiles de la misma cuenta que las cambien concurrentemente. Sólo los tres fixtures de búsqueda conocidos de examples son excepciones de lectura para demo.
 
-Sigue la [instalación oficial](https://learn.chatgpt.com/docs/codex-cli). El usuario ejecuta:
+Repetir la misma configuración conserva progreso; cambiarla invalida revisión/activación local. Otro grupo necesita otro home. Checkpoint/status no incluyen respuestas. No eludas pending ni terminación.
+
+## 4. Preview y aprobación local
 
 ```sh
-codex --version
-codex exec --help
-codex login
-codex login status
+npm run lookout -- onboard preview --home "$LOOKOUT_DATA"
 ```
 
-El login ocurre en el navegador oficial. Nunca inspecciones ni copies archivos de autenticación. No configures API keys para este flujo. Si el login requiere intervención, espera al dueño y continúa con la demo independiente.
-
-Explica el uso de cuota y que el objetivo/preferencias, mensajes seleccionados e historial reciente se envían a Codex. Obtén consentimiento antes de usar contenido real.
+Siempre usa DemoProvider sin chats/login/Codex. Presenta acuerdo y texto exacto al dueño. Sólo tras aprobación, usa el previewDigest:
 
 ```sh
-npm run lookout -- run --config .lookout/search.local.json --provider codex --dry-run
+npm run lookout -- onboard approve --home "$LOOKOUT_DATA" --confirm "approve-local:PREVIEW_DIGEST"
+npm run lookout -- run --home "$LOOKOUT_DATA" --commit
+npm run lookout -- pause --home "$LOOKOUT_DATA"
+npm run lookout -- terminate --home "$LOOKOUT_DATA"
 ```
 
-Ese comando no lee mensajes de WhatsApp: sin `--messages`, usa una lista vacía. La llamada puede consumir cuota. La versión debe soportar los flags de aislamiento; si falla, actualiza oficialmente o informa la incompatibilidad, sin eliminar controles. Comprueba precios, fechas y enlaces manualmente.
+Habilita sólo el archivo runtime/outbox. No concede permiso para Codex, QR, WhatsApp, GitHub o scheduler. El flag registra la respuesta humana observada; no prueba quién lo ejecutó. Un agente no debe fabricarlo desde un pedido genérico.
 
-## 4. Prueba de memoria local
+## 5. Codex opcional
 
-Muestra el acuerdo y el resumen exacto. Sólo tras la aprobación del dueño:
+El dueño instala la [CLI oficial](https://learn.chatgpt.com/docs/codex-cli), ejecuta codex login y completa el navegador. codex login status comprueba método sin leer tokens. No copies auth.json ni configures API keys.
+
+Explica contexto y cuota; pide permiso para esa llamada. status muestra configDigest:
 
 ```sh
-npm run lookout -- status --config .lookout/search.local.json
-npm run lookout -- approve --config .lookout/search.local.json --digest DIGEST_REVISADO
-npm run lookout -- run --config .lookout/search.local.json --provider demo --commit
+npm run lookout -- status --home "$LOOKOUT_DATA"
+npm run lookout -- run --home "$LOOKOUT_DATA" --provider codex --dry-run --confirm "research-with-codex:CONFIG_DIGEST"
 ```
 
-Esto activa **sólo la salida de archivo local**, sin scheduler. Mantén el proveedor demo para probar sin consumo. El recibo queda en `.lookout/outbox/`; la siguiente ejecución inmediata debe decir `not-due`. Tras la frecuencia acordada, la misma URL/precio no genera otra entrega.
+Sin --messages usa lista vacía. Archivos reales de mensajes deben estar fuera de Git y requieren consentimiento de dueño/participantes para compartirlos. Dry-run también consume cuota. Login/cuota/CLI incompatibles son bloqueos; no quites aislamiento. Sólo se probó el contrato con una CLI ficticia.
 
-```sh
-npm run lookout -- pause --config .lookout/search.local.json
-npm run lookout -- terminate --config .lookout/search.local.json
-```
+## 6. Gaps y recuperación
 
-No alteres el reloj ni configures cron para la prueba. Los tests verifican el paso del tiempo con fechas sintéticas. Después de terminar, sólo un directorio de estado nuevo permite empezar otra búsqueda; eso debe ser una decisión deliberada del dueño.
+WhatsApp/QR/scheduler siguen pendientes: muestra missing y docs/WHATSAPP.md. Si el dueño quiere colaborar, sigue docs/CONTRIBUTOR.md. Una rama local revisada sigue usable durante revisión.
 
-## 5. WhatsApp y activación futura — bloqueado por alcance
+No autentiques WhatsApp, instales Baileys, tokens, cron/daemon ni reutilices otro gateway automáticamente. Pausa/terminación afectan próximas ejecuciones, no el proceso que ya sostiene un lock.
 
-No hay un comando de QR ni un transporte WhatsApp incluido. Detente aquí si el usuario esperaba esa conexión y muestra docs/WHATSAPP.md. No instales Baileys, reutilices un gateway personal ni solicites sesiones de otra persona automáticamente.
+Ante lock, revisa procesos antes de borrarlo. Ante delivery/publication pendiente, consulta recibos/remoto sin repetir ni borrar historial. Si vienes de 0.1 con .lookout en Git, doctor lo señala sin leerlo: acuerda pausa y backup/migración privados con el dueño, sin mover/copiar/eliminar sesiones automáticamente. El código nuevo rechaza esa carpeta.
 
-Antes de implementar y activar un transporte, hace falta revisar riesgos, resolver QR local y grupo real, filtrar lectura antes de enviar datos al proveedor, probar destinatario/texto exactos y obtener aprobación. Una autorización adicional se necesita para la primera entrega real y para el scheduler. No se pueden simular esos pasos como completados.
-
-## Diagnóstico
-
-- `pause` y `terminate` impiden las próximas ejecuciones; no interrumpen un ciclo que ya mantiene el lock. Para detener ese proceso usa Ctrl+C y después revisa lock/reserva antes de continuar.
-- `State is locked`: comprueba procesos en ejecución. Un crash puede dejar `.lookout/lock`; bórralo sólo tras confirmar que ningún proceso lo usa.
-- `Configuration changed`: revisa todo el acuerdo y aprueba el digest nuevo.
-- `Unresolved delivery`: no repitas el envío. Revisa `state.json.pending` y busca el recibo exacto por ID en el transporte. En el outbox local, comprueba que ID, grupo y texto del archivo coinciden antes de limpiar únicamente `pending`. Si no puedes confirmar el resultado, deja la búsqueda pausada. No borres el historial para forzar un reenvío.
-- `Codex failed`: login/cuota/compatibilidad; ningún checkpoint exitoso debe guardarse.
-- Sin novedades: comportamiento normal; no existe un mensaje de “no encontré nada” enviado al grupo.
-
-No compartas archivos de estado al pedir ayuda; pueden contener información privada.
+Adopta código con docs/UPDATES.md. Preservar datos no autoriza nuevos permisos.

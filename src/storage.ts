@@ -8,6 +8,7 @@ import {
 } from "node:fs/promises";
 import { join } from "node:path";
 import { randomUUID } from "node:crypto";
+import { privatePath } from "./private.js";
 import {
   emptyState,
   parseState,
@@ -26,14 +27,16 @@ export async function readJson(path: string): Promise<unknown> {
   }
 }
 export async function readState(dir: string, config: Config): Promise<State> {
+  const path = await privatePath(dir, "state.json", "file");
   try {
-    return parseState(await readJson(join(dir, "state.json")), config);
+    return parseState(await readJson(path), config);
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code === "ENOENT") return emptyState();
     throw error;
   }
 }
 export async function saveState(dir: string, state: State): Promise<void> {
+  const path = await privatePath(dir, "state.json", "file");
   await mkdir(dir, { recursive: true, mode: 0o700 });
   const temp = join(dir, `state-${randomUUID()}.tmp`);
   try {
@@ -41,7 +44,8 @@ export async function saveState(dir: string, state: State): Promise<void> {
       mode: 0o600,
       flag: "wx",
     });
-    await rename(temp, join(dir, "state.json"));
+    await privatePath(dir, "state.json", "file");
+    await rename(temp, path);
   } finally {
     await unlink(temp).catch(() => {});
   }
@@ -50,8 +54,8 @@ export async function withLock<T>(
   dir: string,
   action: () => Promise<T>,
 ): Promise<T> {
+  const path = await privatePath(dir, "lock", "file");
   await mkdir(dir, { recursive: true, mode: 0o700 });
-  const path = join(dir, "lock");
   const file = await open(path, "wx", 0o600).catch(() => {
     throw new Error(
       "State is locked. Check for a running process before removing a stale lock.",
@@ -77,13 +81,14 @@ export class FileOutbox implements Transport {
     if (!text.trim() || text.length > 3000)
       throw new Error("Invalid delivery text");
     if (!/^[a-f0-9]{64}$/u.test(id)) throw new Error("Invalid delivery id");
+    const path = await privatePath(this.dir, `${id}.json`, "file");
     await mkdir(this.dir, { recursive: true, mode: 0o700 });
-    const body = JSON.stringify({ id, groupId, text }, null, 2) + "\n",
-      path = join(this.dir, `${id}.json`);
+    const body = JSON.stringify({ id, groupId, text }, null, 2) + "\n";
     try {
       await writeFile(path, body, { mode: 0o600, flag: "wx" });
     } catch (error) {
       if ((error as NodeJS.ErrnoException).code !== "EEXIST") throw error;
+      await privatePath(this.dir, `${id}.json`, "file");
       if ((await readFile(path, "utf8")) !== body)
         throw new Error("Outbox receipt collision");
     }
